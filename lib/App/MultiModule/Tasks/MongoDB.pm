@@ -5,6 +5,8 @@ use 5.006;
 use strict;
 use warnings FATAL => 'all';
 use Message::MongoDB;
+use Data::Dumper;
+use Storable;
 
 use parent 'App::MultiModule::Task';
 =head1 NAME
@@ -20,8 +22,19 @@ App::MultiModule::Tasks::MongoDB - File following task for App::MultiModule
 sub message {
     my $self = shift;
     my $message = shift;
+    $message = Storable::dclone($message);
+    delete $message->{'.ipc_transit_meta'};
+    my $method = $message->{mongo_method} || 'update';
     my $mongo = $self->{mongo};
-    $mongo->message($message);
+    my $mongo_write = $message;
+    my %args = (
+        mongo_db => $message->{mongo_db},
+        mongo_collection => $message->{mongo_collection},
+        mongo_method => $method,
+        mongo_search => $message->{mongo_search},
+        mongo_write => $message
+    );
+    $mongo->message(\%args);
 }
 
 =head2 set_config
@@ -32,7 +45,6 @@ sub set_config {
     my $config = shift;
     $self->{config} = $config;
     $self->{mongo} = Message::MongoDB->new() unless $self->{mongo};
-    
 }
 
 =head1 AUTHOR
