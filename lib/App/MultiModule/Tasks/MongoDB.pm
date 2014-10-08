@@ -20,6 +20,8 @@ App::MultiModule::Tasks::MongoDB - File following task for App::MultiModule
 sub message {
     my $self = shift;
     my $message = shift;
+    my $mongo = $self->{mongo};
+    $mongo->message($message);
 }
 
 =head2 set_config
@@ -29,6 +31,8 @@ sub set_config {
     my $self = shift;
     my $config = shift;
     $self->{config} = $config;
+    $self->{mongo} = Message::MongoDB->new() unless $self->{mongo};
+    
 }
 
 =head1 AUTHOR
